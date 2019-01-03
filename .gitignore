@@ -1,0 +1,10 @@
+/coverage
+/Makefile
+/RunAllTests
+/CMakeCache.txt
+/CMakeFiles
+/Replica.cbp
+/Replica
+cmake_install.cmake
+/cmake-build-debug
+/find_ips
