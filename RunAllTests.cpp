@@ -6,6 +6,7 @@
 
 extern "C" {
 #include "sim_types.h"
+#include "client.h"
 }
 
 
@@ -46,6 +47,18 @@ TEST(Sizes, SockAddrIn) {
 }
 
 
+TEST(Sizes, CliHelloPkt) {
+    LONGS_EQUAL(sizeof(struct cliHelloPkt), 0x300);
+}
+
+TEST(Sizes, CliPkt) {
+    LONGS_EQUAL(sizeof(union CliPkt), 0x300);
+}
+
+
+TEST(Sizes, CliHelloPktOff2) {
+    LONGS_EQUAL(offsetof(cliHelloPkt, enc_k), 0x50);
+}
 
 int main(int ac, char **av) {
     return CommandLineTestRunner::RunAllTests(ac, av);

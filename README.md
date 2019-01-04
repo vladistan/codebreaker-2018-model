@@ -4,6 +4,8 @@ This is a model of Ransomware.  We only have two shared library files, so we
 need to stub / mock the rest of the system.  This way we can observe the way
 our Ransomware is supposed to work and find it's weak points.
 
+The setup is taken from this book https://amzn.to/2LQOeW4
+
 
 The model is CMake + CppUTest project.  The easiest setup is on Mac + HomeBrew.
 Just run commands below
