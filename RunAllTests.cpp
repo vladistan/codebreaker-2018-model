@@ -5,6 +5,7 @@
 
 
 extern "C" {
+#include "support.h"
 #include "sim_types.h"
 #include "client.h"
 }
@@ -58,6 +59,43 @@ TEST(Sizes, CliPkt) {
 
 TEST(Sizes, CliHelloPktOff2) {
     LONGS_EQUAL(offsetof(cliHelloPkt, enc_k), 0x50);
+}
+
+
+
+TEST_GROUP(Rot) {
+
+    void setup() {}
+
+    void teardown() { mock().clear(); }
+
+};
+
+TEST(Rot, Right) {
+    LONGS_EQUAL(0x4123, __ROR2__(0x1234, 4))
+}
+
+TEST(Rot, Left) {
+    LONGS_EQUAL(0x2341, __ROL2__(0x1234, 4))
+}
+
+TEST_GROUP(Misc) {
+    void setup() {}
+
+    void teardown() { mock().clear(); }
+};
+
+TEST(Misc, ReadQsWord) {
+    LONGS_EQUAL(0x1001, __readfsqword(0x1234))
+}
+
+TEST(Misc, QMemCpy) {
+    const char *hll = "Hello World";
+    char msg[40];
+    qmemcpy(msg, hll, strlen(hll) + 1);
+    char *n = static_cast<char *>(qmemcpy(msg, msg + 6, 5));
+    STRCMP_EQUAL(n, "World World");
+    STRCMP_EQUAL(msg, "World World");
 }
 
 int main(int ac, char **av) {
