@@ -71,7 +71,7 @@ int  mock_getsockname(int, struct sockaddr * addr, socklen_t *len) {
     ad->sin_family = AF_INET;
     ad->sin_port = htons(43242);
     ad->sin_addr.s_addr = 0x16722f0a;
-    ad->sin_len = 16;
+//    ad->sin_len = 16;
     bzero(ad->sin_zero, sizeof(*ad->sin_zero));
 
     *len = 16;

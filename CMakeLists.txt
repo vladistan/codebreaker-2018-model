@@ -29,6 +29,10 @@ set(MOCK_SOURCE_FILES mock_net.cpp)
 
 set(REPLICA_SOURCE_FILES replica.c )
 
+
+add_executable(find_ips find_ips.c ${CLI_SOURCE_FILES} ${MOCK_SOURCE_FILES})
 add_executable(RunAllTests RunAllTests.cpp ${CLI_SOURCE_FILES} ${MOCK_SOURCE_FILES})
+target_link_libraries(find_ips  ${CPPUTEST_LIB} ${CPPUTEST_EXT_LIB} ${OPENSSL_LIB} ${CRYPTO_LIB} "--coverage")
 target_link_libraries(RunAllTests  ${CPPUTEST_LIB} ${CPPUTEST_EXT_LIB} ${OPENSSL_LIB} ${CRYPTO_LIB} "--coverage")
 target_compile_options(RunAllTests PUBLIC --coverage)
+

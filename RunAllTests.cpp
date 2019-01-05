@@ -13,6 +13,7 @@ extern "C" {
 #include "mock_data.h"
 #include "client.h"
 #include "crypto.h"
+#include "crack.h"
 }
 
 
@@ -271,6 +272,173 @@ TEST(Task3, BinEncKey) {
 
 }
 
+TEST_GROUP(Task5) {
+    const char *CIDs[5];
+    const char *NegCIDs[5];
+
+    void setup() {
+        const char *otp = "206446";
+        _BYTE src[4] = {10, 0, 34, 241};
+
+        const char *lCIDs[5] = {
+                "b784c8325a15d7b7d62d4ded79b86b08fd0cbc8ed0099fee200b55ef8791eae6",
+                "56ea3b3d00df1ee0592dd4870317020ebe02a232f0ae37fff31733e1f918e571",
+                "3431b241b4f09c76c4ae404919f09cad650fe5f83e4a51ed695464941680f680",
+                "bb52677e489ba0bdf9c55e092e1b9fb98c3d3966fa7126ccc7b3a9527f8d0f54",
+                "ea1e03022cc3a0378ef9056b5346befdf735f56d56509dcb3d1ea03191803815",
+        };
+
+        const char *lCIDNeg[5] = {
+                "078000005005d7b7d62d4ded79b86b08fd0cbc8ed0099fee200b55ef8791eae6",
+                "56ea3b3d00df1ee0592dd4870317020ebe02a232f0ae37fff31733e1f918e571",
+                "3431b241b4f09c76c4ae404919f09cad650fe5f83e4a51ed695464941680f680",
+                "bb52677e489ba0bdf9c55e092e1b9fb98c3d3966fa7126ccc7b3a9527f8d0f54",
+                "ea1e03022cc3a0378ef9056b5346befdf735f56d56509dcb3d1ea03191803815",
+        };
+
+
+        memcpy(CIDs, lCIDs, sizeof(CIDs));
+        memcpy(NegCIDs, lCIDNeg, sizeof(NegCIDs));
+
+        set_loc_data(src, otp);
+
+
+    }
+
+    void teardown() {}
+};
+
+TEST(Task5, MatchCIDPos)
+{
+    const char *expCid = "b784c8325a15d7b7d62d4ded79b86b08fd0cbc8ed0099fee200b55ef8791eae6";
+
+
+    int rv = cid_matches(CIDs, 5, expCid);
+
+    CHECK_TRUE(rv);
+
+}
+
+TEST(Task5, MatchCIDNeg) {
+
+    const char *expCid = "b784c8325a15d7b7d62d4ded79b86b08fd0cbc8ed0099fee200b55ef8791eae6";
+
+    int rv = cid_matches(NegCIDs, 5, expCid);
+
+    CHECK_TRUE(!rv);
+
+}
+
+TEST(Task5, GenerateOTPVal) {
+
+    const char *expotp = "206446";
+    char otpBuf[9];
+
+    gen_otp_val(otpBuf, 206446);
+    STRCMP_EQUAL(expotp, otpBuf);
+}
+
+
+TEST(Task5, GenerateIPDisplay) {
+
+    _BYTE src[4] = {10, 47, 194, 254};
+    char buf[80];
+    const char *exp_res = "10.47.194.254";
+
+    gen_display_res(buf, src);
+
+    STRCMP_EQUAL(buf, exp_res);
+
+}
+
+TEST(Task5, CIDCrackSinglePassPos)
+{
+    _BYTE src[4] = {10, 47, 114, 22};
+    int otp = 197548;
+
+    int rv = cid_crack_attempt( CIDs, 5, src, otp);
+
+    CHECK(rv);
+}
+
+TEST(Task5, CIDCrackSinglePassNeg)
+{
+    _BYTE src[4] = {10, 47, 114, 22};
+    int otp = 197548;
+
+    int rv = cid_crack_attempt( NegCIDs, 5, src, otp);
+
+    CHECK(!rv);
+}
+
+TEST(Task5, FullParamCoverStartBeg)
+{
+    int idx = crk_slice_start(0);
+    LONGS_EQUAL(idx, 0);
+}
+
+TEST(Task5, FullParamCoverEndBeg)
+{
+    int idx = crk_slice_end(0);
+    LONGS_EQUAL(idx, 31);
+}
+
+TEST(Task5, FullParamCoverStartEnd)
+{
+    int idx = crk_slice_start(7);
+    LONGS_EQUAL(idx, 224);
+}
+
+TEST(Task5, FullParamCoverEndEnd)
+{
+    int idx = crk_slice_end(7);
+    LONGS_EQUAL(idx, 255);
+}
+
+TEST(Task5, FullParamCoverStartSecond)
+{
+    int idx = crk_slice_start(1);
+    LONGS_EQUAL(idx, 32);
+}
+
+TEST(Task5, FullParamCoverEndSecond)
+{
+    int idx = crk_slice_end(1);
+    LONGS_EQUAL(idx, 63);
+}
+
+
+TEST(Task5, FullParamCoverStartPenUltimate)
+{
+    int idx = crk_slice_start(6);
+    LONGS_EQUAL(idx, 192);
+}
+
+TEST(Task5, FullParamCoverEndPenUltimate)
+{
+    int idx = crk_slice_end(6);
+    LONGS_EQUAL(idx, 223);
+}
+
+
+TEST(Task5, RangeCrackAttemps)
+{
+
+    cid_crack(CIDs, 5, 110, 115, 20, 24, 197500, 197600);
+
+}
+
+
+TEST(Task5, RangeCrackAttempsEnd)
+{
+    int o3s = crk_slice_start(15);
+    int o3e = crk_slice_end(15);
+
+    cid_crack(CIDs, 5, 114, 114, o3s, o3e, 197540, 197600);
+
+}
+
+
 
 TEST_GROUP(Crypto) {
     void setup() {
@@ -281,6 +449,7 @@ TEST_GROUP(Crypto) {
 
     void teardown() {}
 };
+
 
 
 TEST(Crypto, get_key) {
@@ -515,7 +684,6 @@ TEST(PartialFunctions, make_srv_sock_addr) {
     unsigned char b_addr[] = {172, 17, 39, 217};
 
     LONGS_EQUAL(addr.sin_family, AF_INET);
-    LONGS_EQUAL(addr.sin_len, 16);
     LONGS_EQUAL(addr.sin_port, 0x5000);
     MEMCMP_EQUAL(&addr.sin_addr.s_addr, b_addr, 4);
 }
@@ -533,7 +701,6 @@ TEST(PartialFunctions, bundle_init_works) {
     mock().checkExpectations();
 
     LONGS_EQUAL(addr.sin_family, AF_INET);
-    LONGS_EQUAL(addr.sin_len, 16);
     LONGS_EQUAL(addr.sin_port, 0x0f27);
     MEMCMP_EQUAL(&addr.sin_addr.s_addr, b_addr, 4);
 
@@ -570,7 +737,6 @@ TEST(PartialFunctions, check_can_get_own_addr) {
 
     /* Verify */
 
-    LONGS_EQUAL(addr_len, 0x10);
     LONGS_EQUAL(bundle.loc_addr.sin_family, 2);
     LONGS_EQUAL(bundle.loc_addr.sin_port, 0xeaa8);
     LONGS_EQUAL(bundle.victim_ip, 0x16722f0a);
@@ -603,5 +769,3 @@ TEST(Transmit, SendIsCalled) {
 int main(int ac, char **av) {
     return CommandLineTestRunner::RunAllTests(ac, av);
 }
-
-

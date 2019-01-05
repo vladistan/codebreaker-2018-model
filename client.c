@@ -244,7 +244,7 @@ void get_my_addr(socklen_t *local_addr_len, struct bundle *bnd) {
 
 void make_srv_sock_addr(const char *cp, __int16 a2, struct sockaddr *addr) {
     addr->sa_family = AF_INET;
-    addr->sa_len = sizeof(struct sockaddr_in);
+//    addr->sa_len = sizeof(struct sockaddr_in);
     struct sockaddr_in * sin = (struct sockaddr_in *) addr;
     sin->sin_port = htons(a2);
     sin->sin_addr.s_addr = inet_addr(cp);
