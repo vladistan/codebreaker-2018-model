@@ -258,6 +258,30 @@ TEST(Crypto, get_key) {
 
 }
 
+TEST(Crypto, EvpDigest) {
+
+    const EVP_MD *evp;
+    evp = initEvpDigest();
+
+}
+
+TEST(Crypto, BinEncKey) {
+
+    const char *key;
+    _BYTE expKey[20] = {
+            0x10, 0x30, 0xF2, 0x93, 0xCC, 0x36, 0x86, 0x99,
+            0xF0, 0x81, 0xEC, 0x51, 0x95, 0xA0, 0x18, 0x2A,
+            0x41, 0x43, 0x2F, 0x6B
+    };
+    unsigned int bkLen = 0;
+
+    key = getBinEncKey(&bkLen);
+
+    LONGS_EQUAL(bkLen, 21);
+    MEMCMP_EQUAL(expKey, key, 20);
+
+}
+
 TEST_GROUP(B32codecs) {
     void setup() {}
 

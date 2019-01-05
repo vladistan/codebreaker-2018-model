@@ -8,43 +8,49 @@
 #include "stubs.h"
 
 
-_BYTE first_pk_cksum[64] = {
-        0x33, 0x31, 0x30, 0x61, 0x38, 0x37, 0x32, 0x61, /* 0x0000 */
-        0x64, 0x61, 0x64, 0x38, 0x33, 0x38, 0x37, 0x34, /* 0x0008 */
-        0x31, 0x64, 0x62, 0x33, 0x37, 0x39, 0x36, 0x36, /* 0x0010 */
-        0x32, 0x62, 0x62, 0x34, 0x62, 0x37, 0x64, 0x34, /* 0x0018 */
-        0x34, 0x37, 0x63, 0x31, 0x64, 0x34, 0x39, 0x37, /* 0x0020 */
-        0x31, 0x36, 0x32, 0x38, 0x37, 0x66, 0x63, 0x65, /* 0x0028 */
-        0x34, 0x38, 0x62, 0x32, 0x64, 0x38, 0x34, 0x61, /* 0x0030 */
-        0x61, 0x30, 0x36, 0x38, 0x36, 0x36, 0x31, 0x65,
-};
+const EVP_MD *initEvpDigest() {
+    return EVP_sha256();
+}
+
+const char *getBinEncKey(unsigned int *len) {
+    char key_b32[128];
+    __int64 a1 = 0;
+    bzero(key_b32, sizeof(key_b32));
+    get_sign_key(key_b32, 0x21uLL, a1);
+    return decode_b32(key_b32, len);
+}
+
+int c_hh(void *data, size_t data_len, void *sign, size_t sign_len) {
+
+    const char *bKey;
+    unsigned int bKey_len; // ST1C_4
+    const EVP_MD *evp_md; // rax
+    // rax
+    unsigned int bKey_len_alias; // [rsp+18h] [rbp-120h]
+    unsigned int digest_len; // [rsp+1Ch] [rbp-11Ch]
+    _BYTE buf_to_sign[64]; // [rsp+20h] [rbp-118h]
+    _BYTE digest[64]; // [rsp+50h] [rbp-E8h]
+    __int64 key_b32[8]; // [rsp+80h] [rbp-B8h]
+    _BYTE signature[65]; // [rsp+B0h] [rbp-88h]
+
+    bzero(buf_to_sign, sizeof(buf_to_sign));
+    bzero(signature, sizeof(signature));
 
 
-_BYTE ping_pk_cksum[64] = {
-        0x30, 0x36, 0x39, 0x30, 0x64, 0x33, 0x33, 0x66, /* 0x0000 */
-        0x63, 0x38, 0x64, 0x39, 0x66, 0x66, 0x39, 0x33, /* 0x0008 */
-        0x30, 0x30, 0x66, 0x65, 0x66, 0x36, 0x36, 0x32, /* 0x0010 */
-        0x33, 0x34, 0x62, 0x63, 0x33, 0x30, 0x61, 0x36, /* 0x0018 */
-        0x63, 0x36, 0x33, 0x39, 0x66, 0x66, 0x35, 0x31, /* 0x0020 */
-        0x33, 0x31, 0x37, 0x34, 0x34, 0x65, 0x33, 0x31, /* 0x0028 */
-        0x37, 0x39, 0x37, 0x65, 0x31, 0x65, 0x33, 0x33, /* 0x0030 */
-        0x30, 0x62, 0x31, 0x65, 0x64, 0x36, 0x32, 0x31, /* 0x0038 */
-};
+    bzero(digest, sizeof(digest));
+    bzero(key_b32, sizeof(key_b32));
+
+    digest_len = 0;
 
 
-int c_hh(void *block, size_t blk_len, void *sign, size_t sign_len)
- {
-    if (sign_len != 64) {
-        printf("AIEEE: Asked to write sign of unk length %zu", sign_len);
-        return 0;
-    }
-    if (blk_len == 592) {
-        memcpy(sign, first_pk_cksum, sign_len);
-    }  else if (blk_len == 66) {
-        memcpy(sign, ping_pk_cksum, sign_len);
-    }  else {
-        printf("AIEEE: Asked to sign unknown block.  Len %zu \n", blk_len);
-        return 0;
-    }
+    bKey = getBinEncKey(&bKey_len);
+
+    evp_md = initEvpDigest();
+    HMAC(evp_md, bKey, bKey_len, data, data_len, digest, &digest_len);
+
+    bcvh(digest, 32, signature, 65);
+
+    memcpy(sign, signature, 64);
+
     return 1;
 }
