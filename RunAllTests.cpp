@@ -12,6 +12,7 @@ extern "C" {
 #include "sim_types.h"
 #include "mock_data.h"
 #include "client.h"
+#include "crypto.h"
 }
 
 
@@ -143,7 +144,147 @@ TEST(Misc, Bcvh) {
     LONGS_EQUAL(0x1, n)
 }
 
+TEST_GROUP(Encoders) {
+    void setup() {}
 
+    void teardown() { mock().clear(); }
+};
+
+TEST(Encoders, EncSmallByteVal) {
+    _BYTE src[] = {0x2};
+    _BYTE dst[4];
+
+    bzero(dst, sizeof(src));
+    encByte(src[0], dst);
+
+    MEMCMP_EQUAL(dst, "02", 2);
+}
+
+TEST(Encoders, EncByteValeMoreThanA) {
+    _BYTE src[] = {0xC};
+    _BYTE dst[4];
+
+    bzero(dst, sizeof(src));
+    encByte(src[0], dst);
+
+    MEMCMP_EQUAL(dst, "0c", 2);
+}
+
+TEST(Encoders, EncByteValueEdgeCase) {
+    _BYTE src[] = {0xA};
+    _BYTE dst[4];
+
+    bzero(dst, sizeof(src));
+    encByte(src[0], dst);
+
+    MEMCMP_EQUAL(dst, "0a", 2);
+}
+
+TEST(Encoders, EncByteValueTwoDigits) {
+    _BYTE src[] = {0x10};
+    _BYTE dst[4];
+
+    bzero(dst, sizeof(src));
+    encByte(src[0], dst);
+
+    MEMCMP_EQUAL(dst, "10", 2);
+}
+
+TEST(Encoders, EncByteValueTwoDigitsEdge) {
+    _BYTE src[] = {0xff};
+    _BYTE dst[4];
+
+    bzero(dst, sizeof(src));
+    encByte(src[0], dst);
+
+    MEMCMP_EQUAL(dst, "ff", 2);
+}
+
+TEST(Encoders, EncLonger) {
+    _BYTE src[] = {0xf3, 0x10, 0x94, 0x84, 0x11, 0x00, 0x01, 0x55, 0xea, 0xa0};
+    _BYTE dst[30];
+
+
+    bzero(dst, sizeof(dst));
+
+    bcvh(src, 10, dst, 21);
+
+    MEMCMP_EQUAL(dst, "f310948411000155eaa0", 21);
+
+}
+
+TEST(Encoders, EncIP) {
+
+    _BYTE res[9] = {0x30, 0x61, 0x32, 0x66, 0x37, 0x32, 0x31, 0x36, 0};
+    _BYTE src[4] = {10, 47, 114, 22};
+    _BYTE dst[9];
+
+    memset(dst, 0x34, 9);
+
+    bcvh(src, 4, dst, 9);
+
+    MEMCMP_EQUAL(dst, res, 9);
+
+}
+
+TEST(Encoders, EncByteValueTwoDigitsEdgeM1) {
+    _BYTE src[] = {0xfe};
+    _BYTE dst[4];
+
+    bzero(dst, sizeof(src));
+    encByte(src[0], dst);
+
+    MEMCMP_EQUAL(dst, "fe", 2);
+}
+
+TEST_GROUP(Crypto) {
+    void setup() {
+    }
+
+    void teardown() {}
+};
+
+
+TEST(Crypto, get_key) {
+
+    char key[128];
+    int a3;
+    const char *enc_key = "CAYPFE6MG2DJT4EB5RIZLIAYFJAUGL3L";
+
+    bzero(key, sizeof(key));
+    get_sign_key(key, sizeof(key), a3);
+
+    STRCMP_EQUAL(enc_key, (const char *) key);
+
+}
+
+TEST_GROUP(B32codecs) {
+    void setup() {}
+
+    void teardown() { mock().clear(); }
+};
+
+TEST(B32codecs, simpleDec) {
+    const char *src = "JBSWY3DPEBUG65Z7";
+    const char *exp = "Hello how?";
+    char dst[1024];
+
+    b32dec(src, dst);
+
+    STRCMP_EQUAL(exp, dst);
+
+}
+
+TEST(B32codecs, properDec) {
+
+    const char *src = "JBSWY3DPEBUG65Z7";
+    const char *exp = "Hello how?";
+    int len = 0;
+    const char *rv = decode_b32(src, &len);
+
+    LONGS_EQUAL(11, len);
+    STRCMP_EQUAL(exp, rv);
+}
 TEST_GROUP(PartialFunctions) {
     void setup() {
     //    const char *otp = "197548";
@@ -351,3 +492,5 @@ TEST(Transmit, SendIsCalled) {
 int main(int ac, char **av) {
     return CommandLineTestRunner::RunAllTests(ac, av);
 }
+
+
