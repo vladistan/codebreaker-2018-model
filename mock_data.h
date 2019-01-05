@@ -15,5 +15,6 @@ extern _BYTE rcv_pkt_3[STD_PACKET_SIZE];
 extern _BYTE snd_pkt_2[STD_PACKET_SIZE];
 extern _BYTE snd_pkt_3[STD_PACKET_SIZE];
 
+typedef enum  {MOCK_RCV_STATE_NO, MOCK_RCV_STATE_RCV_HELLO = 1, MOCK_RCV_STATE_RCV_PONG = 2} mockRcvStates;
 
 #endif //REPLICA_MOCK_DATA_H
