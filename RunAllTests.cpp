@@ -238,6 +238,40 @@ TEST(Encoders, EncByteValueTwoDigitsEdgeM1) {
     MEMCMP_EQUAL(dst, "fe", 2);
 }
 
+TEST_GROUP(Task3) {
+    void setup() {
+        const char *otp = "206446";
+        _BYTE src[4] = {10, 0, 34, 241};
+        set_loc_data(src, otp);
+    }
+
+    void teardown() {}
+};
+
+TEST(Task3, BinEncKey) {
+
+    unsigned int localip = 0x12345678;
+    _BYTE client_id_b[128];
+    char client_id_hx[128];
+    char otp[9];
+
+    const char *expCid = "2cbcb9b31e16006a12c8dba7109d37a228d7aabcb59a7dabbbd75e993e0d9c4e";
+
+    bzero(client_id_b, sizeof(client_id_b));
+    bzero(client_id_hx, sizeof(client_id_hx));
+    bzero(otp, sizeof(otp));
+
+    bool n = cid(&localip, client_id_b, otp);
+
+    bcvh(client_id_b, 32, (_BYTE *) client_id_hx, 65);
+
+    LONGS_EQUAL(0x1, n)
+    STRCMP_EQUAL(otp, "206446");
+    STRCMP_EQUAL(client_id_hx, expCid);
+
+}
+
+
 TEST_GROUP(Crypto) {
     void setup() {
         const char *otp = "197548";
