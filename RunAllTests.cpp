@@ -7,6 +7,7 @@
 extern "C" {
 #include "support.h"
 #include "sim_types.h"
+#include "mock_data.h"
 #include "client.h"
 }
 
@@ -47,6 +48,9 @@ TEST(Sizes, SockAddrIn) {
     LONGS_EQUAL(sizeof(sockaddr_in), 0x10);
 }
 
+TEST(Sizes, Bundle) {
+    LONGS_EQUAL(sizeof(struct bundle), 0x790);
+}
 
 TEST(Sizes, CliHelloPkt) {
     LONGS_EQUAL(sizeof(struct cliHelloPkt), 0x300);
@@ -98,6 +102,30 @@ TEST(Misc, QMemCpy) {
     STRCMP_EQUAL(msg, "World World");
 }
 
+
+
+TEST_GROUP(Transmit) {
+    void setup() {}
+
+    void teardown() { mock().clear(); }
+};
+
+TEST(Transmit, SendIsCalled) {
+
+    bnd bundle;
+
+    memset(bundle.send_pkt_pload, 0, sizeof(bundle.send_pkt_pload));
+    strcpy((char *) bundle.send_pkt_pload, "Hello There");
+
+    mock().expectOneCall("send");
+    transmit(&bundle);
+    mock().checkExpectations();
+
+}
+
+
 int main(int ac, char **av) {
     return CommandLineTestRunner::RunAllTests(ac, av);
 }
+
+

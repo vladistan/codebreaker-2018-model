@@ -2,7 +2,7 @@
 #ifndef REPLICA_MOCK_DATA_H
 #define REPLICA_MOCK_DATA_H
 
-#include "tla_types.h"
+#include "sim_types.h"
 #include "client.h"
 
 extern _BYTE loc_enc_ki[0x200LL];
