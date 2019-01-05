@@ -54,3 +54,38 @@ int c_hh(void *data, size_t data_len, void *sign, size_t sign_len) {
 
     return 1;
 }
+
+_BYTE locAddr[4];
+_BYTE locOtp[20];
+
+void set_loc_data(_BYTE* addr, const char* otp) {
+    memcpy(locAddr, addr, 4);
+    memcpy(locOtp, otp, 6);
+    locOtp[6] = 0;
+}
+
+bool cid(unsigned int *local_addr, _BYTE *client_id, char *r_otp) {
+
+
+    const char *bKey;
+    unsigned int bKey_len; // ST1C_4
+    const EVP_MD *evp_md; // rax
+
+    _BYTE localid[20];
+    _BYTE sign[80];
+    size_t sign_len;
+
+    memcpy(localid + 0, locAddr, 4);
+    memcpy(localid + 4, locOtp, 6);
+    strcpy(r_otp, locOtp);
+
+    bKey = getBinEncKey(&bKey_len);
+
+    evp_md = initEvpDigest();
+    HMAC(evp_md, bKey, bKey_len, localid, 10, sign, &sign_len);
+
+    memcpy(client_id, sign, 32);
+
+    return 1;
+}
+

@@ -16,13 +16,6 @@ bool v_hh(void *string, long long int i, void *buffer, long long int i1) {
     return 1;
 }
 
-bool cid(unsigned int *local_addr, _BYTE *client_id, char *otp_str) {
-
-    memcpy(client_id, victim_id_b, 32);
-    memcpy(otp_str, otp, 6);
-
-    return 1;
-}
 
 void encByte(_BYTE bEnc, _BYTE *dst) {
     encHexDigit((bEnc & 0xf0) >> 4, dst);

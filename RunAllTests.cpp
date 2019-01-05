@@ -16,6 +16,7 @@ extern "C" {
 }
 
 
+const char *client_id = "b784c8325a15d7b7d62d4ded79b86b08fd0cbc8ed0099fee200b55ef8791eae6";
 
 
 TEST_GROUP(Sizes) {
@@ -239,6 +240,9 @@ TEST(Encoders, EncByteValueTwoDigitsEdgeM1) {
 
 TEST_GROUP(Crypto) {
     void setup() {
+        const char *otp = "197548";
+        _BYTE src[4] = {10, 47, 114, 22};
+        set_loc_data(src, otp);
     }
 
     void teardown() {}
@@ -282,6 +286,20 @@ TEST(Crypto, BinEncKey) {
 
 }
 
+TEST(Crypto, Cid) {
+    unsigned int localip = 0x12345678;
+    _BYTE client_id_maybe[128];
+    char otp[9];
+    bzero(client_id_maybe, sizeof(client_id_maybe));
+    bzero(otp, sizeof(otp));
+
+    bool n = cid(&localip, client_id_maybe, otp);
+    LONGS_EQUAL(0x1, n)
+    STRCMP_EQUAL(otp, "197548");
+    MEMCMP_EQUAL(client_id_maybe, victim_id_b, 32);
+}
+
+
 TEST_GROUP(B32codecs) {
     void setup() {}
 
@@ -309,11 +327,12 @@ TEST(B32codecs, properDec) {
     LONGS_EQUAL(11, len);
     STRCMP_EQUAL(exp, rv);
 }
+
 TEST_GROUP(PartialFunctions) {
     void setup() {
-    //    const char *otp = "197548";
-    //    _BYTE src[4] = {10, 47, 114, 22};
-    //    set_loc_data(src, otp);
+        const char *otp = "197548";
+        _BYTE src[4] = {10, 47, 114, 22};
+        set_loc_data(src, otp);
 
     }
 
