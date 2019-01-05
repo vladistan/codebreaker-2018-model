@@ -364,6 +364,40 @@ TEST(PartialFunctions, check_clean_buffers_is_right) {
 
 }
 
+TEST(PartialFunctions, ping_pong_works_correctly) {
+
+
+    bnd b;
+    socklen_t local_addr_len;
+
+    _WORD loc_addr_ln_hx;
+    int cid_len;
+    __int16 zero_pad;
+    char zero_pad2;
+    __int64 victim_ip_hx;
+    char zero_pad3;
+    __int64 client_id_maybe_hx[8];
+    char zero_pad4;
+    __int64 sign[8];
+    char zero_pad5;
+    union CliPkt payLoad;
+    _BYTE pkt_prep[STD_PACKET_SIZE];
+    unsigned int saddr = 0x01020304;
+    char otp[7];
+
+    cid(&saddr, b.victim_id, otp);
+
+    mock_recv_init(MOCK_RCV_STATE_RCV_PONG);
+    mock().expectNCalls(2, "send");
+    mock().expectOneCall("recv");
+    do_ping_pong(&loc_addr_ln_hx, client_id_maybe_hx, sign, &local_addr_len, &b, &payLoad);
+    mock().checkExpectations();
+
+    MEMCMP_EQUAL(mock_snd_store[0], snd_pkt_2, STD_PACKET_SIZE);
+    MEMCMP_EQUAL(mock_snd_store[1], snd_pkt_3, STD_PACKET_SIZE);
+
+}
+
 TEST(PartialFunctions, check_form_first_pack_to_srv_correctly) {
 
     socklen_t local_addr_len;
