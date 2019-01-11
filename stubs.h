@@ -12,6 +12,8 @@ bool enc_ki(void *, long long int len);
 bool dispatch_server_command(void *ptr, char *alias_3);
 void set_loc_data(_BYTE *addr, const char *otp);
 
+void gen_otp(time_t ts, char * otp);
+
 void encByte(_BYTE src, _BYTE *dst);
 
 #endif

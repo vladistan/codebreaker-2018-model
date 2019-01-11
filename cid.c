@@ -58,6 +58,43 @@ int c_hh(void *data, size_t data_len, void *sign, size_t sign_len) {
 _BYTE locAddr[4];
 _BYTE locOtp[20];
 
+int get_totp_token(int ts, unsigned int *res )
+{
+    __int64 scratch; // rsi
+    unsigned int v17; // eax
+    unsigned int reshuffle; // ecx
+    __int64 ts_shuffled; // [rsp+0h] [rbp-58h]
+    unsigned char sign[160]; // [rsp+10h] [rbp-48h]
+
+    const char *bKey;
+    unsigned int bKey_len; // ST1C_4
+    const EVP_MD *evp_md; // rax
+    int sign_len;
+
+    bzero(sign, sizeof(sign));
+    ts_shuffled = (__int64)htonl(ts / 30) << 32;
+
+    bKey = getBinEncKey(&bKey_len);
+
+    evp_md = EVP_sha1();
+    HMAC(evp_md, bKey, bKey_len, &ts_shuffled, 8, sign, &sign_len);
+
+    v17 = sign[19] & 0xF;
+    scratch = sign[v17 + 3];
+    reshuffle = ((sign[v17 + 1] << 16) + scratch + (sign[sign[19] & 0xF] << 24) + (sign[v17 + 2] << 8)) & 0x7FFFFFFF;
+    *res = reshuffle % 1000000;
+    return 1;
+}
+
+void gen_otp(time_t ts, char * otp)
+{
+    unsigned int res;
+
+    get_totp_token(ts, &res);
+    snprintf(otp, 7, "%06d", res );
+
+}
+
 void set_loc_data(_BYTE* addr, const char* otp) {
     memcpy(locAddr, addr, 4);
     memcpy(locOtp, otp, 6);

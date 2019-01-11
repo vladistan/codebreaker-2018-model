@@ -272,6 +272,43 @@ TEST(Task3, BinEncKey) {
 
 }
 
+TEST_GROUP(Task6) {
+    void setup() {
+        char otp[20];
+        _BYTE src[4] = {10, 0, 114, 22};
+        time_t ts = time(NULL);
+        ts = 1534166795;
+        gen_otp(ts, otp);
+        set_loc_data(src, otp);
+    }
+
+    void teardown() {}
+};
+
+TEST(Task6, MakeNewCID) {
+
+    const char *expotp = "206446";
+    char otpBuf[9];
+    _BYTE client_id_b[128];
+    char client_id_hx[128];
+    unsigned int localip = 0x12345678;
+
+    const char *expCid = "b784c8325a15d7b7d62d4ded79b86b08fd0cbc8ed0099fee200b55ef8791eae6";
+
+    bzero(client_id_b, sizeof(client_id_b));
+    bzero(client_id_hx, sizeof(client_id_hx));
+    bzero(otp, sizeof(otp));
+
+    bool n = cid(&localip, client_id_b, otpBuf);
+
+    bcvh(client_id_b, 32, (_BYTE *) client_id_hx, 65);
+
+
+    STRCMP_EQUAL(expotp, otpBuf);
+
+}
+
+
 TEST_GROUP(Task5) {
     const char *CIDs[5];
     const char *NegCIDs[5];
